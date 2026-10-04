@@ -1,0 +1,8 @@
+flask>=3.0
+numpy>=1.26
+matplotlib>=3.8
+scipy>=1.11
+opencv-python>=4.9
+pillow>=10.0
+torch>=2.0
+fair-esm>=2.0.0

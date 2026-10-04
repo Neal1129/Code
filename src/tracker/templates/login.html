@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 光黏智踪（LiMuc Trace）光控微纳生物机器人轨迹智能采集与评价软件 V1.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8f9fb 0%, #eef1f5 45%, #e2e6ec 100%);
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+        }
+        .login-card {
+            width: 420px;
+            padding: 44px 36px 36px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 20px 60px rgba(148, 163, 184, 0.22);
+            animation: cardIn 0.6s ease-out;
+        }
+        .login-logo {
+            display: block;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            border-radius: 16px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(120, 128, 140, 0.18));
+        }
+        .login-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        .login-subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+        .field {
+            margin-bottom: 20px;
+        }
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4b5563;
+        }
+        .field input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d8dee6;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.86);
+            color: #111827;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .field input::placeholder { color: #9ca3af; }
+        .field input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+        .login-btn {
+            display: block;
+            width: 100%;
+            padding: 13px 0;
+            margin-top: 8px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #dfe7f2, #bcc9d8);
+            color: #334155;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 0 8px 18px rgba(148, 163, 184, 0.18);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #e7edf6, #c8d4e2);
+            box-shadow: 0 10px 22px rgba(148, 163, 184, 0.24);
+        }
+        .login-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(148, 163, 184, 0.18);
+        }
+        .login-error {
+            margin-top: 16px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        .login-error.show { display: block; }
+        .register-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .register-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .register-link a:hover { color: #5dade2; }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake { animation: shake 0.4s ease; }
+    </style>
+</head>
+<body>
+    <form class="login-card" id="loginForm" onsubmit="return handleLogin(event)">
+        <img class="login-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Logo"
+             onerror="this.style.display='none'">
+        <div class="login-title">光黏智踪（LiMuc Trace）</div>
+        <div class="login-subtitle">光控微纳生物机器人轨迹智能采集与评价软件 V1.0<br>请登录以继续使用</div>
+        <div class="field">
+            <label for="username">用户名</label>
+            <input id="username" type="text" placeholder="请输入用户名" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+            <label for="password">密码</label>
+            <input id="password" type="password" placeholder="请输入密码" autocomplete="current-password" required>
+        </div>
+        <button class="login-btn" type="submit">登 录</button>
+        <div class="login-error" id="loginError"></div>
+        <div class="register-link">还没有账户？<a href="{{ url_for('register_page') }}">立即注册</a></div>
+    </form>
+    <script>
+        function handleLogin(e) {
+            e.preventDefault();
+            var username = document.getElementById("username").value.trim();
+            var password = document.getElementById("password").value;
+            var errEl = document.getElementById("loginError");
+            var form = document.getElementById("loginForm");
+            errEl.classList.remove("show");
+
+            fetch("{{ url_for('do_login') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.ok) {
+                    window.location.href = "{{ url_for('main_page') }}";
+                } else {
+                    errEl.textContent = data.error || "登录失败";
+                    errEl.classList.add("show");
+                    form.classList.remove("shake");
+                    void form.offsetWidth;
+                    form.classList.add("shake");
+                }
+            })
+            .catch(function () {
+                errEl.textContent = "网络错误，请重试";
+                errEl.classList.add("show");
+            });
+            return false;
+        }
+    </script>
+</body>
+</html>

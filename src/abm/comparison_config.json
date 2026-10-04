@@ -1,0 +1,34 @@
+{
+  "normalization_mode": "fixed_positive",
+  "fluorescence_csv": null,
+  "I_light": 1.0,
+  "variants": [
+    {"variant": "CheZ-LOV", "D_exp": null, "D_tilde": 0.0, "D_tilde_unclipped": 0.0, "speed_um_s": null},
+    {"variant": "AI-1", "D_exp": null, "D_tilde": 0.25, "D_tilde_unclipped": 0.25, "speed_um_s": null},
+    {"variant": "AI-2", "D_exp": null, "D_tilde": 0.55, "D_tilde_unclipped": 0.55, "speed_um_s": null},
+    {"variant": "AI-3", "D_exp": null, "D_tilde": 0.85, "D_tilde_unclipped": 0.85, "speed_um_s": null},
+    {"variant": "Positive-Control", "D_exp": null, "D_tilde": 1.0, "D_tilde_unclipped": 1.0, "speed_um_s": null}
+  ],
+  "reset_rates_per_s": [0.0, 0.02, 0.05, 0.1],
+  "reset_mode": "position",
+  "rwr_speed_um_s": 20.0,
+  "peptide_grid_reset_rate_per_s": 0.02,
+  "peptide_grid_trajectory_count": 8,
+  "reset_position_um": [30.0, -400.0],
+  "output_dir": "results",
+  "abm_overrides": {
+    "N": 100,
+    "T_S": 100.0,
+    "DT_S": 0.1,
+    "X_MIN": 0.0,
+    "X_MAX": 130.0,
+    "Y_MIN": -800.0,
+    "Y_MAX": 0.0,
+    "REG_A_END": 50.0,
+    "REG_B_END": 90.0,
+    "X_INTERFACE": 50.0,
+    "X_TARGET": 100.0,
+    "USE_MUCUS_LAYER_THICKNESS_CONTROL": false,
+    "SEED": 20260914
+  }
+}

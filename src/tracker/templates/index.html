@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>光黏智踪（LiMuc Trace）细菌轨迹智能识别软件 V3.2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="account-bar">
+        <span>当前用户：{{ username }}</span>
+        <a href="{{ url_for('logout') }}">退出登录</a>
+    </div>
+    <div class="container" id="appLayout">
+        <div class="history-sidebar" id="historySidebar">
+            <div class="history-header">
+                <div>
+                    <div class="history-title">Task History</div>
+                    <div class="history-subtitle">按时间倒序显示，支持点击加载、星标、备注与标签管理</div>
+                </div>
+                <button class="history-toggle-btn" id="historyToggleBtn" type="button" onclick="toggleHistoryPanel()">收起</button>
+            </div>
+            <div class="history-toolbar">
+                <button class="btn gray history-action-btn" type="button" onclick="refreshTaskHistory()">刷新</button>
+                <button class="btn dark history-action-btn" type="button" onclick="clearTaskComparison()">清空对比</button>
+            </div>
+            <div id="historyEmpty" class="history-empty">暂无历史任务，处理完成后会自动出现在这里</div>
+            <div id="historyList" class="history-list"></div>
+        </div>
+        <button class="history-edge-toggle" id="historyEdgeToggle" type="button" onclick="toggleHistoryPanel()">历史任务</button>
+        <div class="left" id="videoPanel">
+            <div class="canvas-box">
+                <video id="resultVideo" class="video" controls preload="metadata" playsinline></video>
+                <div class="legend">
+                    <div class="legend-item"><span class="dot red"></span> Top 10% 优选轨迹</div>
+                </div>
+            </div>
+            <div class="video-controls">
+                <button class="btn red" id="playPauseBtn" onclick="togglePlayPause()">▶ 播放</button>
+            </div>
+        </div>
+        <div class="right">
+            <div class="card">
+                <div class="title">视频输入</div>
+                <div class="file-upload">
+                    <input type="file" id="videoInput" accept=".mp4,.avi,.mov">
+                </div>
+                <div class="control-buttons">
+                    <button class="btn red" onclick="upload()">▶ 上传视频</button>
+                </div>
+                <div id="statusText" class="status-message" style="display: none;"></div>
+                <div id="processingStatus" class="processing-status-block" style="display: none;">
+                    <div class="progress-header">
+                        <span id="progressStageText">正在处理视频...</span>
+                        <span id="progressPct">0%</span>
+                    </div>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-footer">
+                        <button class="btn progress-pause-btn" id="pauseResumeBtn" type="button" onclick="togglePauseResume()">⏸ 暂停处理</button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab(event, 'params')">参数调整</button>
+                <button class="tab-btn" onclick="switchTab(event, 'results')">数据分析</button>
+                <button class="tab-btn" onclick="switchTab(event, 'charts')">图表分析</button>
+            </div>
+            <div id="params-tab" class="tab-content active">
+                <div class="card">
+                    <div class="title">Canny 边缘检测</div>
+                    <label>低阈值 (0-100)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="cannyLow" min="0" max="100" value="30" onchange="updateParams()">
+                        <input type="number" id="cannyLowInput" min="0" max="100" value="30" onchange="updateParamFromInput('cannyLow', 'cannyLowInput')">
+                    </div>
+                    <label>高阈值 (0-200)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="cannyHigh" min="0" max="200" value="100" onchange="updateParams()">
+                        <input type="number" id="cannyHighInput" min="0" max="200" value="100" onchange="updateParamFromInput('cannyHigh', 'cannyHighInput')">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="title">Hough Circle</div>
+                    <label>DP (1-2)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="houghDP" min="1" max="2" step="0.1" value="1.2" onchange="updateParams()">
+                        <input type="number" id="houghDPInput" min="1" max="2" step="0.1" value="1.2" onchange="updateParamFromInput('houghDP', 'houghDPInput', 'float')">
+                    </div>
+                    <label>最小距离 (1-50)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="houghMinDist" min="1" max="50" value="15" onchange="updateParams()">
+                        <input type="number" id="houghMinDistInput" min="1" max="50" value="15" onchange="updateParamFromInput('houghMinDist', 'houghMinDistInput')">
+                    </div>
+                    <label>参数1 (50-200)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="houghParam1" min="50" max="200" value="100" onchange="updateParams()">
+                        <input type="number" id="houghParam1Input" min="50" max="200" value="100" onchange="updateParamFromInput('houghParam1', 'houghParam1Input')">
+                    </div>
+                    <label>参数2 (1-50)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="houghParam2" min="1" max="50" value="12" onchange="updateParams()">
+                        <input type="number" id="houghParam2Input" min="1" max="50" value="12" onchange="updateParamFromInput('houghParam2', 'houghParam2Input')">
+                    </div>
+                    <label>最小半径 (1-20)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="minRadius" min="1" max="20" value="4" onchange="updateParams()">
+                        <input type="number" id="minRadiusInput" min="1" max="20" value="4" onchange="updateParamFromInput('minRadius', 'minRadiusInput')">
+                    </div>
+                    <label>最大半径 (5-50)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="maxRadius" min="5" max="50" value="15" onchange="updateParams()">
+                        <input type="number" id="maxRadiusInput" min="5" max="50" value="15" onchange="updateParamFromInput('maxRadius', 'maxRadiusInput')">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="title">追踪参数</div>
+                    <label>最大丢失帧数 (1-50)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="trackMaxMiss" min="1" max="50" value="20" onchange="updateParams()">
+                        <input type="number" id="trackMaxMissInput" min="1" max="50" value="20" onchange="updateParamFromInput('trackMaxMiss', 'trackMaxMissInput')">
+                    </div>
+                    <label>匹配距离 (1-100)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="matchDistance" min="1" max="100" value="30" onchange="updateParams()">
+                        <input type="number" id="matchDistanceInput" min="1" max="100" value="30" onchange="updateParamFromInput('matchDistance', 'matchDistanceInput')">
+                    </div>
+                    <label>像素到微米比例 (0.1-100)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="pixelToMicron" min="0.1" max="100" step="0.1" value="1.0" onchange="updateParams()">
+                        <input type="number" id="pixelToMicronInput" min="0.1" max="100" step="0.1" value="1.0" onchange="updateParamFromInput('pixelToMicron', 'pixelToMicronInput', 'float')">
+                    </div>
+                    <label>最小速度 (0-20)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="speedMin" min="0" max="20" value="5" onchange="updateParams()">
+                        <input type="number" id="speedMinInput" min="0" max="20" value="5" onchange="updateParamFromInput('speedMin', 'speedMinInput')">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="title">界面参数</div>
+                    <label>界面Y比例 (0-1)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="interfaceRatio" min="0" max="1" step="0.1" value="0.5" onchange="updateParams()">
+                        <input type="number" id="interfaceRatioInput" min="0" max="1" step="0.1" value="0.5" onchange="updateParamFromInput('interfaceRatio', 'interfaceRatioInput', 'float')">
+                    </div>
+                    <label>芯片长度(微米) (100-2000)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="chipLength" min="100" max="2000" value="600" onchange="updateParams()">
+                        <input type="number" id="chipLengthInput" min="100" max="2000" value="600" onchange="updateParamFromInput('chipLength', 'chipLengthInput')">
+                    </div>
+                    <label>目标阈值(微米) (100-1000)</label>
+                    <div class="param-input-group">
+                        <input type="range" id="targetThreshold" min="100" max="1000" value="500" onchange="updateParams()">
+                        <input type="number" id="targetThresholdInput" min="100" max="1000" value="500" onchange="updateParamFromInput('targetThreshold', 'targetThresholdInput')">
+                    </div>
+                </div>
+            </div>
+            <div id="results-tab" class="tab-content">
+                <div class="card">
+                    <div class="title">数据统计</div>
+                    <div class="subtitle">V3.2 连续轨迹、气泡过滤与直线运动分析结果</div>
+                    <div id="analysisResults" style="display: none;">
+                        <div class="stat-card penetration">
+                            <div class="stat-label">直线率 (Straight-line Rate)</div>
+                            <div class="stat-value" id="penetrationRate">0%</div>
+                            <div class="stat-detail">直线轨迹: <span id="penetrationCount">0</span> / 合格轨迹: <span id="totalTracks">0</span></div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="penetrationBar"></div></div>
+                        </div>
+                        <div class="stat-card target">
+                            <div class="stat-label">目标到达率 (Target Arrival Rate)</div>
+                            <div class="stat-value" id="targetRate">0%</div>
+                            <div class="stat-detail">到达数: <span id="targetCount">0</span> / <span id="eligibleTracks">0</span></div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="targetBar"></div></div>
+                        </div>
+                        <div class="stat-card trapped">
+                            <div class="stat-label">低速帧占比 (Low-speed Ratio)</div>
+                            <div class="stat-value" id="trappedRate">0%</div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="trappedBar"></div></div>
+                        </div>
+                        <div class="stat-card direction">
+                            <div class="stat-label">方向性 (Directionality)</div>
+                            <div class="stat-value" id="directionality">0</div>
+                        </div>
+                        <div class="stat-card time">
+                            <div class="stat-label">首次到达时间 (First Passage Time)</div>
+                            <div class="stat-value" id="firstArrivalTime">0s</div>
+                        </div>
+                        <div class="stat-card displacement">
+                            <div class="stat-label">平均位移 (Average Displacement)</div>
+                            <div class="stat-value" id="avgDisplacement">0μm</div>
+                        </div>
+                    </div>
+                    <div class="stat-card export-card">
+                        <div class="stat-label export-title">导出数据</div>
+                        <div class="export-note">处理完成后，数据已保存到以下位置：</div>
+                        <ul class="export-list">
+                            <li>视频输出: <strong id="outputVideoPath"></strong></li>
+                            <li>结果JSON: <strong id="outputJsonPath"></strong></li>
+                            <li>逐帧轨迹CSV: <strong id="outputCsvPath"></strong></li>
+                            <li>逐轨迹指标CSV: <strong id="outputTrackMetricsPath"></strong></li>
+                            <li>图表文件: <strong id="outputChartsPath"></strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="noResults" style="display: block;">
+                    <p>处理视频后将显示分析结果</p>
+                </div>
+                <div class="card comparison-card">
+                    <div class="title">历史任务对比</div>
+                    <div class="subtitle">选中两个历史任务后，自动生成对比表与雷达图</div>
+                    <div id="comparisonEmpty" class="comparison-empty">请选择两个历史任务进行对比</div>
+                    <div id="comparisonContent" style="display: none;">
+                        <div class="comparison-meta">
+                            <div class="comparison-task-pill" id="compareTaskALabel">任务 A</div>
+                            <div class="comparison-task-pill" id="compareTaskBLabel">任务 B</div>
+                        </div>
+                        <div class="comparison-actions">
+                            <button class="btn red" type="button" onclick="exportComparisonCsv()">导出 CSV</button>
+                            <button class="btn gray" type="button" onclick="exportComparisonChart()">导出对比图</button>
+                        </div>
+                        <div class="comparison-canvas-wrap">
+                            <canvas id="comparisonRadar" width="720" height="420"></canvas>
+                        </div>
+                        <div class="comparison-table-wrap">
+                            <table class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>指标</th>
+                                        <th id="comparisonTableHeadA">任务 A</th>
+                                        <th id="comparisonTableHeadB">任务 B</th>
+                                        <th>差值</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparisonTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="charts-tab" class="tab-content">
+                <div id="noChartsResults" style="display: block; text-align: center; padding: 20px;">
+                    <p style="color: #000000;">请上传视频并处理，以查看图表分析</p>
+                </div>
+                <div id="chartsAnalysis" style="display: none;">
+                    <h3>图表分析</h3>
+                    <div class="chart-container">
+                        <div class="chart-item"><h4>速度分布</h4><img id="speedChart" src="" alt="速度分布图表" class="chart"></div>
+                        <div class="chart-item"><h4>位移分布</h4><img id="displacementChart" src="" alt="位移分布图表" class="chart"></div>
+                        <div class="chart-item"><h4>方向性分布</h4><img id="directionalityChart" src="" alt="方向性分布图表" class="chart"></div>
+                        <div class="chart-item"><h4>低速占比分布</h4><img id="trapChart" src="" alt="低速占比分布图表" class="chart"></div>
+                        <div class="chart-item"><h4>FPT分布</h4><img id="fptChart" src="" alt="FPT分布图表" class="chart"></div>
+                        <div class="chart-item"><h4>迁移效率指标</h4><img id="ratesChart" src="" alt="迁移效率指标图表" class="chart"></div>
+                        <div class="chart-item"><h4>行为分类</h4><img id="classificationChart" src="" alt="行为分类图表" class="chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='upload_logic_v2.js') }}"></script>
+</body>
+</html>

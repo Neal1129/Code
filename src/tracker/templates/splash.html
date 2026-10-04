@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光黏智踪（LiMuc Trace）光控微纳生物机器人轨迹智能采集与评价软件 V1.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8f9fb 0%, #eef1f5 45%, #e2e6ec 100%);
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+        }
+        .splash {
+            max-width: 920px;
+            padding: 0 24px;
+            text-align: center;
+            animation: fadeInUp 1s ease-out;
+        }
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 28px;
+            border-radius: 28px;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 24px rgba(120, 128, 140, 0.22));
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .splash-title {
+            font-size: 40px;
+            font-weight: 700;
+            color: #1f2937;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.6);
+        }
+        .splash-version {
+            font-size: 16px;
+            color: #6b7280;
+            letter-spacing: 1px;
+            line-height: 1.7;
+            margin-bottom: 40px;
+        }
+        .splash-loading {
+            font-size: 16px;
+            color: #4b5563;
+            letter-spacing: 1px;
+        }
+        .splash-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        .splash-bar-track {
+            width: 240px;
+            height: 4px;
+            margin: 24px auto 0;
+            border-radius: 2px;
+            background: rgba(148, 163, 184, 0.22);
+            overflow: hidden;
+        }
+        .splash-bar-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #c7cdd6, #9aa4b2);
+            transition: width 0.3s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.05); }
+        }
+        @keyframes dots {
+            0%  { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100%{ content: '....'; }
+        }
+        .fade-out {
+            animation: fadeOut 0.6s ease-in forwards;
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: scale(1.04); }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash" id="splashContainer">
+        <img class="splash-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Logo"
+             onerror="this.style.display='none'">
+        <div class="splash-title">光黏智踪（LiMuc Trace）</div>
+        <div class="splash-version">光控微纳生物机器人轨迹智能采集与评价软件 V1.0</div>
+        <div class="splash-loading">正在初始化<span class="splash-dots"></span></div>
+        <div class="splash-bar-track">
+            <div class="splash-bar-fill" id="splashBar"></div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var bar = document.getElementById("splashBar");
+            var progress = 0;
+            var timer = setInterval(function () {
+                progress += Math.random() * 18 + 6;
+                if (progress > 95) progress = 95;
+                bar.style.width = progress + "%";
+            }, 300);
+
+            setTimeout(function () {
+                clearInterval(timer);
+                bar.style.width = "100%";
+                setTimeout(function () {
+                    document.getElementById("splashContainer").classList.add("fade-out");
+                    setTimeout(function () {
+                        window.location.href = "{{ url_for('login_page') }}";
+                    }, 500);
+                }, 400);
+            }, 2800);
+        })();
+    </script>
+</body>
+</html>
